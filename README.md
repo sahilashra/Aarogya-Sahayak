@@ -123,19 +123,6 @@ Every request generates an HMAC-SHA256 signed audit entry in DynamoDB. Raw clini
 
 ---
 
-## 🧪 Test Results
-
-```
-Unit Tests:         49 / 49 passed   ✅  (1.14s)
-Production API:      8 / 8 passed    ✅  (avg 7.5s warm)
-Frontend UI:         7 / 7 passed    ✅
-Overall:            64 / 65 passed   ✅  98.5% pass rate
-```
-
-Coverage: handlers 90% · orchestrator 93% · PHI detection 84% · models 100%
-
----
-
 ## 🚀 Quick Start — Run Locally (No AWS Needed)
 
 ```bash
@@ -263,20 +250,6 @@ aws cloudformation deploy \
   --capabilities CAPABILITY_IAM \
   --region us-east-1
 ```
-
-| Service | Cost/month |
-|---------|-----------|
-| Lambda (10K requests) | ~$0.25 |
-| Bedrock Nova Pro (summaries) | ~$3.50 |
-| Bedrock Titan Embeddings | ~$0.05 |
-| DynamoDB (PAY_PER_REQUEST) | ~$0.01 |
-| API Gateway | ~$0.01 |
-| S3 + CloudWatch | ~$0.52 |
-| **Total** | **~$4.34/month** |
-
-$240 credits ≈ 55 months of operation at prototype scale.
-
----
 
 ## 🔮 Roadmap
 
