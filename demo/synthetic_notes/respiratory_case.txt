@@ -1,0 +1,70 @@
+SYNTHETIC CLINICAL NOTE - RESPIRATORY CASE
+==========================================
+Date: [REDACTED]
+Patient ID: [REDACTED]
+Age: 64 years
+Gender: Male
+
+CHIEF COMPLAINT:
+Patient presents with worsening shortness of breath, increased cough with yellowish sputum production, and wheezing for the past 4 days.
+
+HISTORY OF PRESENT ILLNESS:
+Patient with known chronic obstructive pulmonary disease (COPD) reports progressive dyspnea over the past 4 days. He describes increased difficulty breathing with minimal exertion, such as walking to the bathroom. Cough has become more frequent with production of thick, yellowish sputum. Patient also reports chest tightness and audible wheezing. He denies fever, chest pain, or hemoptysis. Patient admits to continued smoking despite previous counseling. He has been using his rescue inhaler more frequently (6-8 times daily) with minimal relief.
+
+PAST MEDICAL HISTORY:
+- COPD diagnosed 6 years ago (GOLD Stage 2)
+- Hypertension for 10 years
+- Former smoker (quit 2 years ago after 40 pack-year history)
+- No history of tuberculosis or asthma
+
+FAMILY HISTORY:
+Father died of lung cancer at age 68. Mother had hypertension.
+
+SOCIAL HISTORY:
+Former construction worker, now retired. Smoked 1 pack per day for 40 years, quit 2 years ago. Occasional alcohol use. Lives with spouse who also smokes.
+
+MEDICATIONS:
+- Tiotropium 18mcg inhaler once daily
+- Salbutamol 100mcg inhaler as needed (currently using 6-8 times daily)
+- Amlodipine 5mg once daily for hypertension
+- Inconsistent use of inhaled corticosteroids
+
+PHYSICAL EXAMINATION:
+Vitals: BP 142/86 mmHg, Pulse 96/min, Respiratory Rate 24/min, Temperature 98.8°F, SpO2 88% on room air, Weight 62 kg, Height 168 cm, BMI 22.0
+General: Appears dyspneic, using accessory muscles of respiration, speaking in short sentences
+HEENT: No cyanosis, pursed-lip breathing noted
+Neck: No jugular venous distension, no lymphadenopathy
+Cardiovascular: Tachycardic, regular rhythm, no murmurs
+Respiratory: Bilateral expiratory wheezes throughout lung fields, prolonged expiratory phase, decreased breath sounds in lower zones, no crackles
+Abdomen: Soft, non-tender, no organomegaly
+Extremities: No clubbing, no edema, no cyanosis
+
+LABORATORY FINDINGS:
+Arterial Blood Gas (room air): pH 7.36, PaCO2 48 mmHg, PaO2 58 mmHg, HCO3 26 mEq/L
+Complete Blood Count: WBC 12,500/μL with neutrophilia, Hemoglobin 14.2 g/dL, Platelets 245,000/μL
+Chest X-ray: Hyperinflation, flattened diaphragms, no acute infiltrates, no pneumothorax
+Sputum: Purulent appearance, culture pending
+Spirometry (from 3 months ago): FEV1 58% predicted, FEV1/FVC ratio 0.62
+
+ASSESSMENT:
+Acute exacerbation of chronic obstructive pulmonary disease (AECOPD), likely infectious etiology. Patient has moderate COPD with acute worsening requiring intensified bronchodilator therapy and systemic corticosteroids.
+
+PLAN:
+1. Admit to medical ward for monitoring and treatment
+2. Oxygen therapy via nasal cannula to maintain SpO2 88-92%
+3. Nebulized Salbutamol 2.5mg and Ipratropium 0.5mg every 4 hours
+4. Oral Prednisolone 40mg once daily for 5 days
+5. Antibiotic therapy - Amoxicillin-Clavulanate 625mg three times daily for 7 days
+6. Continue Tiotropium 18mcg inhaler once daily
+7. Continue Amlodipine for hypertension
+8. Chest physiotherapy and breathing exercises
+9. Smoking cessation counseling (patient and household members)
+10. Nutritional assessment and supplementation if needed
+11. Pulmonary rehabilitation referral after acute episode resolves
+12. Pneumococcal and influenza vaccination status to be reviewed
+13. Consider long-term oxygen therapy assessment if hypoxemia persists
+14. Follow-up spirometry in 6 weeks after recovery
+15. Discharge planning with inhaler technique education and action plan for future exacerbations
+
+PATIENT EDUCATION PROVIDED:
+Discussed COPD exacerbation triggers, importance of medication adherence, proper inhaler technique, and smoking cessation. Explained warning signs of worsening condition requiring immediate medical attention. Emphasized need for pulmonary rehabilitation and regular follow-up. Patient and family verbalized understanding of treatment plan and agreed to smoking cessation support.

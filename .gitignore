@@ -1,0 +1,74 @@
+# ── Python ────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# ── Virtual environments ───────────────────────────────────────
+.venv/
+venv/
+ENV/
+env/
+
+# ── Environment / Credentials — NEVER COMMIT ──────────────────
+.env
+.env.local
+.env.production
+.env.*.local
+*.pem
+samconfig.toml
+
+# ── AWS Secrets / Keys ─────────────────────────────────────────
+kms-policy.json
+bucket-policy.json
+
+# ── Lambda build artifacts ─────────────────────────────────────
+function.zip
+faiss-layer.zip
+python/
+package/
+
+# ── Testing / Coverage ─────────────────────────────────────────
+.pytest_cache/
+.hypothesis/
+htmlcov/
+.coverage
+coverage.xml
+*.cover
+coverage_output.txt
+test_output.txt
+test_output_utf8.txt
+
+# ── Temp / scratch files ───────────────────────────────────────
+api_results.txt
+api_tests_combined.txt
+api_test_1.txt
+demo_output.txt
+temp_data.txt
+generate_html.py
+generate_sample_pdf.py
+run_api_tests.py
+
+# ── IDE / OS ───────────────────────────────────────────────────
+.kiro/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# ── Internal / prompt files ────────────────────────────────────
+REGRESSION_TEST_PROMPT.md
+
+# ── Demo runtime artifacts — not needed in GitHub ──────────────
+demo/pmc_corpus/
+demo/_artifacts/
+demo/demo_run.py
+demo/demo_run.sh
+demo/demo_run.ps1
+demo/test_audit_logger_demo.py

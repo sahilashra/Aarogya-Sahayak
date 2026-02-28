@@ -1,0 +1,419 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Aarogya Sahayak - Clinical Decision Support System Infrastructure'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Deployment environment
+
+  BedrockModelId:
+    Type: String
+    Default: anthropic.claude-3-sonnet-20240229-v1:0
+    Description: Amazon Bedrock model ID for LLM inference
+
+Resources:
+  # S3 Bucket for PMC Corpus Embeddings
+  PMCCorpusBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'aarogya-sahayak-pmc-corpus-${Environment}-${AWS::AccountId}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 30
+      Tags:
+        - Key: Project
+          Value: AarogyaSahayak
+        - Key: Environment
+          Value: !Ref Environment
+
+  # DynamoDB Table for Audit Logs
+  AuditLogsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'aarogya-sahayak-audit-logs-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: request_id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+      KeySchema:
+        - AttributeName: request_id
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      Tags:
+        - Key: Project
+          Value: AarogyaSahayak
+        - Key: Environment
+          Value: !Ref Environment
+
+  # DynamoDB Table for Rate Limiting
+  RateLimitTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'aarogya-sahayak-rate-limit-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: user_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: user_id
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      Tags:
+        - Key: Project
+          Value: AarogyaSahayak
+        - Key: Environment
+          Value: !Ref Environment
+
+  # KMS Key for Audit Log Signing
+  AuditLogSigningKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key for signing audit logs
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: 'kms:*'
+            Resource: '*'
+          - Sid: Allow Lambda to use the key
+            Effect: Allow
+            Principal:
+              AWS: !GetAtt SummarizeLambdaRole.Arn
+            Action:
+              - 'kms:Decrypt'
+              - 'kms:GenerateDataKey'
+              - 'kms:CreateGrant'
+            Resource: '*'
+      Tags:
+        - Key: Project
+          Value: AarogyaSahayak
+        - Key: Environment
+          Value: !Ref Environment
+
+  AuditLogSigningKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub 'alias/aarogya-sahayak-audit-${Environment}'
+      TargetKeyId: !Ref AuditLogSigningKey
+
+  # Cognito User Pool for Authentication
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub 'aarogya-sahayak-users-${Environment}'
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: false
+        - Name: role
+          AttributeDataType: String
+          Mutable: true
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 12
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+      MfaConfiguration: OPTIONAL
+      EnabledMfas:
+        - SOFTWARE_TOKEN_MFA
+      UserPoolTags:
+        Project: AarogyaSahayak
+        Environment: !Ref Environment
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub 'aarogya-sahayak-client-${Environment}'
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+      RefreshTokenValidity: 30
+      TokenValidityUnits:
+        AccessToken: hours
+        IdToken: hours
+        RefreshToken: days
+
+  # IAM Role for Lambda
+  SummarizeLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'aarogya-sahayak-lambda-role-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: BedrockAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'bedrock:InvokeModel'
+                  - 'bedrock:InvokeModelWithResponseStream'
+                Resource: '*'
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:ListBucket'
+                Resource:
+                  - !GetAtt PMCCorpusBucket.Arn
+                  - !Sub '${PMCCorpusBucket.Arn}/*'
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'dynamodb:PutItem'
+                  - 'dynamodb:GetItem'
+                  - 'dynamodb:UpdateItem'
+                  - 'dynamodb:Query'
+                Resource:
+                  - !GetAtt AuditLogsTable.Arn
+                  - !GetAtt RateLimitTable.Arn
+        - PolicyName: KMSAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'kms:Decrypt'
+                  - 'kms:GenerateDataKey'
+                Resource: !GetAtt AuditLogSigningKey.Arn
+      Tags:
+        - Key: Project
+          Value: AarogyaSahayak
+        - Key: Environment
+          Value: !Ref Environment
+
+  # Lambda Function
+  SummarizeLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'aarogya-sahayak-summarize-${Environment}'
+      Runtime: python3.11
+      Handler: summarize.lambda_handler
+      Role: !GetAtt SummarizeLambdaRole.Arn
+      Code:
+        S3Bucket: !Sub 'aarogya-sahayak-deployment-${AWS::AccountId}'
+        S3Key: !Sub 'lambda/${Environment}/summarize.zip'
+      Timeout: 60
+      MemorySize: 1024
+      Environment:
+        Variables:
+          AWS_MODE: production
+          BEDROCK_MODEL_ID: !Ref BedrockModelId
+          PMC_CORPUS_BUCKET: !Ref PMCCorpusBucket
+          AUDIT_LOGS_TABLE: !Ref AuditLogsTable
+          RATE_LIMIT_TABLE: !Ref RateLimitTable
+          KMS_KEY_ID: !Ref AuditLogSigningKey
+          ENVIRONMENT: !Ref Environment
+      Tags:
+        - Key: Project
+          Value: AarogyaSahayak
+        - Key: Environment
+          Value: !Ref Environment
+
+  # Lambda Log Group
+  SummarizeLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${SummarizeLambda}'
+      RetentionInDays: 30
+
+  # API Gateway REST API
+  RestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub 'aarogya-sahayak-api-${Environment}'
+      Description: Aarogya Sahayak Clinical Decision Support API
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      Tags:
+        - Key: Project
+          Value: AarogyaSahayak
+        - Key: Environment
+          Value: !Ref Environment
+
+  # API Gateway Authorizer
+  ApiAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: CognitoAuthorizer
+      Type: COGNITO_USER_POOLS
+      IdentitySource: method.request.header.Authorization
+      RestApiId: !Ref RestApi
+      ProviderARNs:
+        - !GetAtt UserPool.Arn
+
+  # API Gateway Resource: /summaries
+  SummariesResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref RestApi
+      ParentId: !GetAtt RestApi.RootResourceId
+      PathPart: summaries
+
+  # API Gateway Method: POST /summaries
+  SummariesPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref RestApi
+      ResourceId: !Ref SummariesResource
+      HttpMethod: POST
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref ApiAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SummarizeLambda.Arn}/invocations'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: Empty
+        - StatusCode: 400
+        - StatusCode: 401
+        - StatusCode: 422
+        - StatusCode: 429
+        - StatusCode: 500
+
+  # Lambda Permission for API Gateway
+  ApiGatewayInvokeLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SummarizeLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*/*'
+
+  # API Gateway Deployment
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - SummariesPostMethod
+    Properties:
+      RestApiId: !Ref RestApi
+      StageName: !Ref Environment
+
+  # CloudWatch Alarms
+  LambdaErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub 'aarogya-sahayak-lambda-errors-${Environment}'
+      AlarmDescription: Alert when Lambda function errors exceed threshold
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref SummarizeLambda
+
+  LambdaThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub 'aarogya-sahayak-lambda-throttles-${Environment}'
+      AlarmDescription: Alert when Lambda function is throttled
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref SummarizeLambda
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}'
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiEndpoint'
+
+  UserPoolId:
+    Description: Cognito User Pool ID
+    Value: !Ref UserPool
+    Export:
+      Name: !Sub '${AWS::StackName}-UserPoolId'
+
+  UserPoolClientId:
+    Description: Cognito User Pool Client ID
+    Value: !Ref UserPoolClient
+    Export:
+      Name: !Sub '${AWS::StackName}-UserPoolClientId'
+
+  PMCCorpusBucketName:
+    Description: S3 bucket for PMC corpus
+    Value: !Ref PMCCorpusBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-PMCCorpusBucket'
+
+  AuditLogsTableName:
+    Description: DynamoDB table for audit logs
+    Value: !Ref AuditLogsTable
+    Export:
+      Name: !Sub '${AWS::StackName}-AuditLogsTable'
+
+  KMSKeyId:
+    Description: KMS key for audit log signing
+    Value: !Ref AuditLogSigningKey
+    Export:
+      Name: !Sub '${AWS::StackName}-KMSKeyId'

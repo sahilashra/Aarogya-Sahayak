@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aarogya Sahayak — Clinical AI Copilot</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0f1e;--surface:#111827;--surface2:#1a2235;--surface3:#1f2d44;
+  --border:#1e3a5f;--border2:#2d4a6e;
+  --accent:#00d4ff;--accent2:#0099bb;--accent-glow:rgba(0,212,255,0.15);
+  --green:#00e676;--amber:#ffab00;--red:#ff5252;--purple:#bb86fc;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --font:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#0d1b2e 0%,#0a1628 100%);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 18px var(--accent-glow)}
+.logo-text h1{font-size:19px;font-weight:700;color:var(--text);letter-spacing:-0.5px}
+.logo-text p{font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.header-right{display:flex;gap:8px;align-items:center}
+.hbadge{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:0.3px;border:1px solid}
+.hbadge-green{color:var(--green);border-color:rgba(0,230,118,0.3);background:rgba(0,230,118,0.08)}
+.hbadge-blue{color:var(--accent);border-color:rgba(0,212,255,0.3);background:rgba(0,212,255,0.08)}
+.hbadge-amber{color:var(--amber);border-color:rgba(255,171,0,0.3);background:rgba(255,171,0,0.08)}
+.live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;display:inline-block;margin-right:4px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.4)}}
+
+/* HELP BUTTON */
+.btn-help{background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--accent);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:var(--font);display:flex;align-items:center;gap:5px}
+.btn-help:hover{background:rgba(0,212,255,0.18);border-color:var(--accent)}
+
+/* HELP MODAL OVERLAY */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;backdrop-filter:blur(4px);align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;width:680px;max-width:94vw;max-height:85vh;overflow-y:auto;position:relative}
+.modal::-webkit-scrollbar{width:4px}
+.modal::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.modal-header{padding:22px 26px 0;display:flex;justify-content:space-between;align-items:flex-start;position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:0}
+.modal-title{font-size:17px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.modal-close{background:var(--surface2);border:1px solid var(--border);color:var(--text3);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.modal-close:hover{color:var(--text);border-color:var(--border2)}
+.modal-body{padding:22px 26px 28px}
+.help-section{margin-bottom:22px}
+.help-section:last-child{margin-bottom:0}
+.help-section-title{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.help-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
+.help-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px}
+.hi-blue{background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.2)}
+.hi-green{background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.2)}
+.hi-amber{background:rgba(255,171,0,0.1);border:1px solid rgba(255,171,0,0.2)}
+.hi-red{background:rgba(255,82,82,0.1);border:1px solid rgba(255,82,82,0.2)}
+.hi-purple{background:rgba(187,134,252,0.1);border:1px solid rgba(187,134,252,0.2)}
+.help-text strong{font-size:13px;font-weight:600;color:var(--text);display:block;margin-bottom:2px}
+.help-text span{font-size:12px;color:var(--text3);line-height:1.5}
+.help-divider{height:1px;background:var(--border);margin:18px 0}
+.help-pipeline{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px}
+.pipe-step{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;font-family:var(--mono);color:var(--text2)}
+.pipe-arrow{color:var(--text3);font-size:13px}
+.help-warning{background:rgba(255,171,0,0.08);border:1px solid rgba(255,171,0,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:#ffd54f;line-height:1.6;margin-top:4px}
+.help-tip{background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:8px}
+.help-tip strong{color:var(--accent)}
+.kbd{background:var(--surface3);border:1px solid var(--border2);border-radius:4px;padding:1px 6px;font-family:var(--mono);font-size:11px;color:var(--text2)}
+
+/* LAYOUT */
+.main{display:grid;grid-template-columns:370px 1fr;gap:0;height:calc(100vh - 62px);overflow:hidden}
+
+/* LEFT PANEL */
+.left{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.left-top{padding:16px 20px 0;border-bottom:1px solid var(--border);padding-bottom:12px}
+.left-top-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+
+/* MODE TOGGLE */
+.mode-toggle{display:flex;background:var(--bg);border-radius:8px;padding:3px;border:1px solid var(--border);margin-bottom:12px}
+.mode-btn{flex:1;padding:7px;border:none;background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;border-radius:6px;transition:all 0.2s;font-family:var(--font)}
+.mode-btn.active{background:var(--surface3);color:var(--accent);box-shadow:0 0 10px var(--accent-glow)}
+
+/* INPUT TABS */
+.input-tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.input-tab{flex:1;padding:7px;border:none;background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:var(--font)}
+.input-tab.active{background:var(--surface3);color:var(--text)}
+
+.left-scroll{flex:1;overflow-y:auto;padding:14px 20px}
+.left-scroll::-webkit-scrollbar{width:3px}
+.left-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* CASE CARDS */
+.section-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.case-card{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px 14px;margin-bottom:7px;cursor:pointer;transition:all 0.2s;border-left:3px solid transparent}
+.case-card:hover{border-color:var(--border2);background:var(--surface3);transform:translateX(2px)}
+.case-card.active-case.diabetes{background:var(--surface3);border-left-color:#00d4ff;border-color:rgba(0,212,255,0.25)}
+.case-card.active-case.hypertension{background:var(--surface3);border-left-color:#ff5252;border-color:rgba(255,82,82,0.25)}
+.case-card.active-case.respiratory{background:var(--surface3);border-left-color:#00e676;border-color:rgba(0,230,118,0.25)}
+.case-card.diabetes{border-left-color:rgba(0,212,255,0.25)}
+.case-card.hypertension{border-left-color:rgba(255,82,82,0.25)}
+.case-card.respiratory{border-left-color:rgba(0,230,118,0.25)}
+.case-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px}
+.case-meta{font-size:11px;color:var(--text3)}
+.case-preview{font-size:11px;color:var(--text2);margin-top:5px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* INPUT SECTIONS */
+.input-section{display:none}
+.input-section.visible{display:block}
+
+.lang-select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:7px;font-size:12px;margin-bottom:10px;font-family:var(--font);cursor:pointer;outline:none}
+.lang-select:focus{border-color:var(--border2)}
+textarea.note-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px;border-radius:7px;font-size:12px;font-family:var(--mono);resize:vertical;min-height:150px;line-height:1.6;outline:none;transition:border-color 0.2s}
+textarea.note-input:focus{border-color:var(--accent2)}
+textarea.note-input::placeholder{color:var(--text3)}
+
+/* PDF UPLOAD */
+.pdf-drop{border:2px dashed var(--border);border-radius:9px;padding:18px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:10px}
+.pdf-drop:hover,.pdf-drop.dragover{border-color:var(--accent2);background:var(--accent-glow)}
+.pdf-drop-icon{font-size:24px;margin-bottom:6px}
+.pdf-drop-text{font-size:11px;color:var(--text3);line-height:1.5}
+.pdf-drop-text strong{color:var(--accent);display:block;margin-bottom:3px;font-size:12px}
+.pdf-status{font-size:11px;padding:7px 11px;border-radius:6px;margin-bottom:8px;display:none;line-height:1.4}
+.pdf-status.success{background:rgba(0,230,118,0.08);color:var(--green);border:1px solid rgba(0,230,118,0.2);display:block}
+.pdf-status.error{background:rgba(255,82,82,0.08);color:var(--red);border:1px solid rgba(255,82,82,0.2);display:block}
+#pdfFileInput{display:none}
+.note-preview-box{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px;font-size:11px;font-family:var(--mono);color:var(--text2);line-height:1.5;max-height:80px;overflow-y:auto;display:none;margin-bottom:8px}
+.note-preview-box.visible{display:block}
+
+/* ANALYSE BUTTON */
+.left-bottom{padding:12px 20px;border-top:1px solid var(--border);background:var(--surface)}
+.btn-analyse{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;border:none;padding:13px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:var(--font);letter-spacing:0.3px}
+.btn-analyse:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,212,255,0.3)}
+.btn-analyse.live-mode{background:linear-gradient(135deg,#00e676,#00b248)}
+.mode-hint{margin-top:7px;font-size:10px;color:var(--text3);text-align:center;font-family:var(--mono)}
+
+/* RIGHT PANEL */
+.right{background:var(--bg);overflow-y:auto}
+.right::-webkit-scrollbar{width:5px}
+.right::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* WELCOME / PLACEHOLDER */
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px;text-align:center}
+.welcome-glow{width:70px;height:70px;background:var(--accent-glow);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:20px;border:1px solid rgba(0,212,255,0.2)}
+.welcome h2{font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px}
+.welcome-sub{font-size:13px;color:var(--text3);max-width:400px;line-height:1.7;margin-bottom:28px}
+.welcome-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:520px;width:100%;margin-bottom:24px}
+.ws-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 14px;text-align:center}
+.ws-num{width:24px;height:24px;background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.25);border-radius:50%;font-size:11px;font-weight:700;color:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 8px}
+.ws-card strong{font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px}
+.ws-card span{font-size:11px;color:var(--text3);line-height:1.5}
+.welcome-tip{font-size:11px;color:var(--text3);font-family:var(--mono);background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 14px}
+
+/* LOADING */
+.loading-panel{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px}
+.loading-ring{width:50px;height:50px;border:3px solid var(--border);border-top:3px solid var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:var(--text2);font-weight:600}
+.loading-sub{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.loading-steps{display:flex;flex-direction:column;gap:5px;margin-top:4px}
+.loading-step{font-size:11px;color:var(--text3);font-family:var(--mono);opacity:0;animation:fadeStep 0.5s forwards}
+@keyframes fadeStep{to{opacity:1}}
+
+/* RESULTS */
+.results-container{padding:20px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.animate-in{animation:fadeUp 0.35s ease-out forwards}
+
+/* POWERED BY */
+.powered-by{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:11px;color:var(--text3);font-family:var(--mono);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 13px;margin-bottom:14px}
+.aws-chip{background:rgba(255,171,0,0.1);color:var(--amber);padding:2px 7px;border-radius:4px;font-weight:600;border:1px solid rgba(255,171,0,0.2)}
+.pipe-sep{color:var(--border2)}
+
+/* METRIC GRID */
+.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+.metric-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.metric-value{font-size:26px;font-weight:700;font-family:var(--mono);margin-bottom:5px}
+.metric-sub{font-size:11px;color:var(--text3)}
+.progress-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:7px}
+.progress-fill{height:100%;border-radius:2px;transition:width 1s ease-out}
+.conf-high{color:var(--green)}.conf-med{color:var(--amber)}.conf-low{color:var(--red)}
+.fill-high{background:linear-gradient(90deg,var(--green),#00b248)}
+.fill-med{background:linear-gradient(90deg,var(--amber),#e65100)}
+.fill-low{background:linear-gradient(90deg,var(--red),#b71c1c)}
+
+/* RESULT CARDS */
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:18px;margin-bottom:12px}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px}
+.cticon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px}
+.ci-blue{background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.2)}
+.ci-amber{background:rgba(255,171,0,0.1);border:1px solid rgba(255,171,0,0.2)}
+.ci-purple{background:rgba(187,134,252,0.1);border:1px solid rgba(187,134,252,0.2)}
+.time-tag{font-size:10px;color:var(--text3);font-family:var(--mono);background:var(--surface2);padding:3px 8px;border-radius:5px;border:1px solid var(--border)}
+.summary-text{font-size:13px;color:var(--text2);line-height:1.8}
+
+/* TRANSLATION */
+.trans-tabs{display:flex;gap:5px;margin-top:14px;margin-bottom:8px;border-top:1px solid var(--border);padding-top:12px}
+.trans-tab{padding:5px 13px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text3);transition:all 0.2s;font-family:var(--font)}
+.trans-tab.active{background:var(--surface3);border-color:var(--border2);color:var(--text)}
+.trans-content{display:none;font-size:13px;color:var(--text2);line-height:1.8;padding:11px;background:var(--surface2);border-radius:7px;border:1px solid var(--border)}
+.trans-content.active{display:block}
+
+/* ACTIONS */
+.action-item{background:var(--surface2);border:1px solid var(--border);border-radius:9px;margin-bottom:7px;overflow:hidden;cursor:pointer;transition:border-color 0.2s}
+.action-item:hover{border-color:var(--border2)}
+.action-main{padding:12px 14px;display:flex;align-items:flex-start;gap:10px}
+.sev-badge{padding:3px 7px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;white-space:nowrap}
+.sev-critical,.sev-high{background:rgba(255,82,82,0.13);color:#ff8a80;border:1px solid rgba(255,82,82,0.22)}
+.sev-medium{background:rgba(255,171,0,0.13);color:#ffd740;border:1px solid rgba(255,171,0,0.22)}
+.sev-low{background:rgba(0,212,255,0.13);color:#80d8ff;border:1px solid rgba(0,212,255,0.22)}
+.action-body{flex:1;min-width:0}
+.action-text{font-size:13px;font-weight:500;color:var(--text);margin-bottom:5px;line-height:1.5}
+.action-tags{display:flex;gap:6px;flex-wrap:wrap}
+.action-tag{font-size:10px;color:var(--text3);font-family:var(--mono);background:var(--surface3);padding:2px 6px;border-radius:3px;border:1px solid var(--border)}
+.action-right{text-align:right;min-width:76px}
+.conf-num{font-size:14px;font-weight:700;font-family:var(--mono)}
+.review-flag{font-size:10px;padding:2px 6px;border-radius:4px;margin-top:4px;display:inline-block}
+.review-yes{background:rgba(255,171,0,0.12);color:#ffd740;border:1px solid rgba(255,171,0,0.18)}
+.review-no{background:rgba(0,230,118,0.08);color:#69f0ae;border:1px solid rgba(0,230,118,0.18)}
+.evidence-panel{display:none;border-top:1px solid var(--border);padding:10px 14px;background:var(--bg)}
+.evidence-panel.open{display:block}
+.evidence-item{padding:9px;background:var(--surface2);border-radius:6px;margin-bottom:5px;border:1px solid var(--border)}
+.ev-title{font-size:11px;font-weight:600;color:var(--text);margin-bottom:3px}
+.ev-meta{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:3px}
+.ev-snippet{font-size:11px;color:var(--text2);line-height:1.5}
+.sim-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:5px}
+.sim-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+
+/* SOURCES */
+.source-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.source-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px}
+.source-pmc{font-size:10px;font-family:var(--mono);color:var(--accent);background:rgba(0,212,255,0.08);padding:2px 6px;border-radius:3px;border:1px solid rgba(0,212,255,0.18);display:inline-block;margin-bottom:6px}
+.source-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.source-snippet{font-size:11px;color:var(--text3);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+
+/* ERROR */
+.error-card{background:rgba(255,82,82,0.07);border:1px solid rgba(255,82,82,0.2);border-radius:11px;padding:20px;margin:20px;text-align:center}
+.error-card h3{color:var(--red);margin-bottom:8px;font-size:14px}
+.error-card p{color:var(--text3);font-size:12px;line-height:1.6}
+
+/* FOOTER */
+.footer{background:var(--surface);border-top:1px solid var(--border);padding:12px 28px;text-align:center}
+.footer-warn{color:var(--amber);font-size:12px;font-weight:600;margin-bottom:3px}
+.footer-sub{font-size:10px;color:var(--text3)}
+
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- ========== HEADER ========== -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">🏥</div>
+    <div class="logo-text">
+      <h1>Aarogya Sahayak</h1>
+      <p>Clinical AI Copilot — Responsible Decision Support</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="hbadge hbadge-green">🔒 PHI Protected</span>
+    <span class="hbadge hbadge-blue">📚 RAG Grounded</span>
+    <span class="hbadge hbadge-amber">🇮🇳 AI for Bharath</span>
+    <span class="hbadge hbadge-green" id="liveIndicator"><span class="live-dot"></span>Ready</span>
+    <button class="btn-help" onclick="openHelp()">❓ How it works</button>
+  </div>
+</div>
+
+<!-- ========== HELP MODAL ========== -->
+<div class="modal-overlay" id="helpModal" onclick="closeHelpOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">❓ How Aarogya Sahayak Works</div>
+      <button class="modal-close" onclick="closeHelp()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="help-section">
+        <div class="help-section-title">🚀 Getting Started (3 steps)</div>
+        <div class="help-row">
+          <div class="help-icon hi-blue">1️⃣</div>
+          <div class="help-text"><strong>Choose your input method</strong><span>Pick from 3 preset demo cases, type your own clinical note, or upload a PDF / TXT clinical document.</span></div>
+        </div>
+        <div class="help-row">
+          <div class="help-icon hi-blue">2️⃣</div>
+          <div class="help-text"><strong>Select mode</strong><span><b>Demo (Instant)</b> — shows pre-computed results immediately, great for demos. &nbsp;<b>Live AWS Bedrock</b> — sends your note to a real AWS Lambda + Bedrock pipeline (~5 seconds).</span></div>
+        </div>
+        <div class="help-row">
+          <div class="help-icon hi-blue">3️⃣</div>
+          <div class="help-text"><strong>Click Analyse Note</strong><span>Results appear on the right with summary, actions, translations, and evidence citations.</span></div>
+        </div>
+      </div>
+
+      <div class="help-divider"></div>
+
+      <div class="help-section">
+        <div class="help-section-title">⚙️ AWS Pipeline (what happens behind the scenes)</div>
+        <div class="help-pipeline">
+          <span class="pipe-step">Your Note</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">PHI Check</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">API Gateway</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">AWS Lambda</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">Titan Embeddings</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">FAISS RAG</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">Bedrock Nova Pro</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">DynamoDB Audit</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">JSON Response</span>
+        </div>
+      </div>
+
+      <div class="help-divider"></div>
+
+      <div class="help-section">
+        <div class="help-section-title">📋 Understanding the Results</div>
+        <div class="help-row">
+          <div class="help-icon hi-green">📊</div>
+          <div class="help-text"><strong>Confidence Score (e.g. 72%)</strong><span>How well the AI's output is grounded in evidence. Above 60% = acceptable. Below 60% = clinician review is flagged automatically.</span></div>
+        </div>
+        <div class="help-row">
+          <div class="help-icon hi-amber">⚡</div>
+          <div class="help-text"><strong>Recommended Actions</strong><span>Click any action card to expand its PMC evidence citations and cosine similarity scores. HIGH severity = urgent. MEDIUM = important. Each action shows its confidence % independently.</span></div>
+        </div>
+        <div class="help-row">
+          <div class="help-icon hi-blue">👨‍⚕️ Review vs ✅ OK</div>
+          <div class="help-text"><strong>Clinician Review Flag</strong><span>"Review" = the AI is less certain, a qualified clinician must verify before acting. "OK" = confidence is sufficient, but review is always recommended.</span></div>
+        </div>
+        <div class="help-row">
+          <div class="help-icon hi-purple">🛡️</div>
+          <div class="help-text"><strong>Hallucination Guard</strong><span>Every recommendation is cross-checked against the PMC corpus using vector similarity. If output cannot be grounded, hallucination_alert = true and actions are suppressed.</span></div>
+        </div>
+        <div class="help-row">
+          <div class="help-icon hi-green">🇮🇳</div>
+          <div class="help-text"><strong>Hindi / Tamil Translations</strong><span>Patient-friendly summaries in Hindi and Tamil are generated by Bedrock Nova Pro for health literacy. Switch between languages using the tab buttons.</span></div>
+        </div>
+      </div>
+
+      <div class="help-divider"></div>
+
+      <div class="help-section">
+        <div class="help-section-title">📄 Input Options</div>
+        <div class="help-tip"><strong>Preset Cases</strong> — 3 synthetic demo cases (Type 2 Diabetes, Hypertension, Respiratory Disease) with pre-built results. Best for quick demos.</div>
+        <div class="help-tip"><strong>Custom Note</strong> — Type or paste any clinical note. Works with Live AWS mode to call real Bedrock inference. Try: <em>"65M with chest pain, BP 145/90, LDL 4.2 mmol/L, on statins"</em></div>
+        <div class="help-tip"><strong>Upload PDF</strong> — Drag and drop a PDF or TXT clinical document. Text is extracted automatically in-browser (no upload to any server) and passed to the API.</div>
+      </div>
+
+      <div class="help-divider"></div>
+
+      <div class="help-warning">
+        ⚠️ <strong>Important Safety Notice:</strong> Aarogya Sahayak is a <strong>prototype research tool</strong> built for the AI for Bharath Hackathon. It is <strong>NOT validated for clinical use</strong>. All outputs are AI-generated suggestions and must be reviewed by a qualified clinician before any action is taken. No real patient data should be entered.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MAIN LAYOUT ========== -->
+<div class="main">
+
+  <!-- LEFT PANEL -->
+  <div class="left">
+    <div class="left-top">
+      <div class="left-top-label">Mode</div>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="modeDemo" onclick="setMode('demo')">⚡ Demo (Instant)</button>
+        <button class="mode-btn" id="modeLive" onclick="setMode('live')">🔴 Live AWS Bedrock</button>
+      </div>
+      <div class="input-tabs" style="margin-top:0">
+        <button class="input-tab active" id="tabPreset" onclick="setInputTab('preset')">Preset Cases</button>
+        <button class="input-tab" id="tabCustom" onclick="setInputTab('custom')">Custom Note</button>
+        <button class="input-tab" id="tabPdf" onclick="setInputTab('pdf')">PDF Upload</button>
+      </div>
+    </div>
+
+    <div class="left-scroll">
+
+      <!-- PRESET -->
+      <div class="input-section visible" id="sectionPreset">
+        <div class="section-label" style="margin:12px 0 8px">Select a clinical case</div>
+        <div class="case-card diabetes" id="card-diabetes" onclick="selectCase('diabetes')">
+          <div class="case-title">🩺 Type 2 Diabetes</div>
+          <div class="case-meta">52F • HbA1c 8.2% • Fasting glucose 186 mg/dL</div>
+          <div class="case-preview">52-year-old female with increased thirst, frequent urination, newly diagnosed T2DM with dyslipidaemia...</div>
+        </div>
+        <div class="case-card hypertension" id="card-hypertension" onclick="selectCase('hypertension')">
+          <div class="case-title">❤️ Hypertension</div>
+          <div class="case-meta">58M • BP 158/96 mmHg • On Amlodipine</div>
+          <div class="case-preview">58-year-old male with persistent headaches, dizziness, known hypertensive requiring therapy review...</div>
+        </div>
+        <div class="case-card respiratory" id="card-respiratory" onclick="selectCase('respiratory')">
+          <div class="case-title">🫁 Respiratory Disease</div>
+          <div class="case-meta">45M • SpO2 94% • 20 pack-year smoker</div>
+          <div class="case-preview">45-year-old male with progressive breathlessness, wheeze on exertion, suspected COPD...</div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:6px;line-height:1.5">
+          💡 Select a case, then click Analyse below
+        </div>
+      </div>
+
+      <!-- CUSTOM NOTE -->
+      <div class="input-section" id="sectionCustom">
+        <div class="section-label" style="margin:12px 0 8px">Patient summary language</div>
+        <select class="lang-select" id="langSelect">
+          <option value="hi">🇮🇳 Hindi (हिन्दी)</option>
+          <option value="ta">🇮🇳 Tamil (தமிழ்)</option>
+          <option value="en">🌐 English</option>
+        </select>
+        <div class="section-label" style="margin-bottom:6px">Clinical note</div>
+        <textarea class="note-input" id="customNote" placeholder="Paste or type a clinical note here...&#10;&#10;Example:&#10;68M with chest pain on exertion. Known CAD.&#10;BP 145/90 mmHg. LDL 4.2 mmol/L.&#10;On aspirin + atorvastatin. Echo: EF 45%."></textarea>
+      </div>
+
+      <!-- PDF UPLOAD -->
+      <div class="input-section" id="sectionPdf">
+        <div class="section-label" style="margin:12px 0 8px">Patient summary language</div>
+        <select class="lang-select" id="langSelectPdf">
+          <option value="hi">🇮🇳 Hindi (हिन्दी)</option>
+          <option value="ta">🇮🇳 Tamil (தமிழ்)</option>
+          <option value="en">🌐 English</option>
+        </select>
+        <div class="section-label" style="margin-bottom:6px">Clinical document</div>
+        <div class="pdf-drop" id="pdfDrop"
+          onclick="document.getElementById('pdfFileInput').click()"
+          ondragover="handleDragOver(event)"
+          ondrop="handleDrop(event)"
+          ondragleave="this.classList.remove('dragover')">
+          <div class="pdf-drop-icon">📄</div>
+          <div class="pdf-drop-text">
+            <strong>Click to upload or drag & drop</strong>
+            PDF clinical notes, discharge summaries, lab reports<br>
+            <span style="font-size:10px">Supports .pdf and .txt — text extracted locally</span>
+          </div>
+        </div>
+        <input type="file" id="pdfFileInput" accept=".pdf,.txt" onchange="handleFileSelect(event)">
+        <div class="pdf-status" id="pdfStatus"></div>
+        <div class="note-preview-box" id="pdfPreviewBox"></div>
+      </div>
+
+    </div><!-- end left-scroll -->
+
+    <!-- STICKY BOTTOM -->
+    <div class="left-bottom">
+      <button class="btn-analyse" id="analyseBtn" onclick="analyse()">▶ Analyse Note</button>
+      <div class="mode-hint" id="modeHint">⚡ Demo mode — instant pre-computed results</div>
+    </div>
+  </div><!-- end left -->
+
+  <!-- RIGHT PANEL -->
+  <div class="right" id="rightPanel">
+    <div class="welcome">
+      <div class="welcome-glow">🏥</div>
+      <h2>Aarogya Sahayak</h2>
+      <div class="welcome-sub">Clinical AI Copilot for India's healthcare workforce. Summarises clinical notes, generates evidence-backed recommendations, and provides multilingual patient summaries — powered by Amazon Bedrock.</div>
+      <div class="welcome-steps">
+        <div class="ws-card">
+          <div class="ws-num">1</div>
+          <strong>Choose Input</strong>
+          <span>Select a preset case, type a note, or upload a PDF</span>
+        </div>
+        <div class="ws-card">
+          <div class="ws-num">2</div>
+          <strong>Select Mode</strong>
+          <span>Demo for instant results, or Live to call AWS Bedrock</span>
+        </div>
+        <div class="ws-card">
+          <div class="ws-num">3</div>
+          <strong>Analyse</strong>
+          <span>Get AI summary, actions, translations & PMC citations</span>
+        </div>
+      </div>
+      <div class="welcome-tip">❓ Click "How it works" in the header for a full guide</div>
+    </div>
+  </div>
+
+</div><!-- end main -->
+
+<div class="footer">
+  <div class="footer-warn">⚠️ Non-Diagnostic Prototype — All outputs require mandatory clinician review</div>
+  <div class="footer-sub">AI for Bharath Hackathon • February 2026 • Amazon Bedrock Nova Pro + Titan Embeddings + FAISS RAG + AWS Lambda</div>
+</div>
+
+<script>
+if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const API_URL='https://1iewiqgxm1.execute-api.us-east-1.amazonaws.com/summaries';
+let currentMode='demo', currentInputTab='preset', selectedCase=null, extractedText='';
+
+// ── DEMO DATA ──────────────────────────────────────────────────────────────
+const NOTE_TEXTS={
+  diabetes:'52-year-old female presents with increased thirst, frequent urination, and weight loss over 3 months. Fasting Blood Glucose: 186 mg/dL. HbA1c: 8.2%. BMI 28.4. Known dyslipidaemia. BP 138/86 mmHg. Newly diagnosed Type 2 Diabetes Mellitus. No prior anti-diabetic therapy.',
+  hypertension:'58-year-old male presents with persistent headaches and dizziness for 6 weeks. BP 158/96 mmHg on two separate readings. Known hypertensive, currently on Amlodipine 5mg OD. BMI 31.2. Sedentary lifestyle. Fasting glucose normal. Creatinine 98 umol/L.',
+  respiratory:'45-year-old male presents with progressive breathlessness and wheeze on exertion for 4 months. SpO2 94% on room air. 20 pack-year smoking history. No current inhalers. FEV1 predicted 68%. Suspected COPD requiring spirometry confirmation.'
+};
+
+const DEMO={
+  diabetes:{request_id:'f72dc5ee-demo',summary:'Patient presents with Type 2 Diabetes Mellitus with comorbid Hypertension requiring structured glycaemic management. Elevated fasting glucose and HbA1c indicate suboptimal metabolic control requiring pharmacotherapy review. Metformin optimisation and dietary modification are first-line interventions. Screening for microvascular complications including retinopathy and nephropathy is indicated. Follow-up in 2–4 weeks to assess medication tolerance and glycaemic response is recommended.',patient_summary:{hi:'रोगी को टाइप 2 मधुमेह (डायबिटीज़) है जिसके लिए तुरंत इलाज की जरूरत है। खून में शुगर का स्तर सामान्य से अधिक है। डॉक्टर ने मेटफॉर्मिन दवाई शुरू करने की सलाह दी है। रोजाना 30 मिनट की हल्की कसरत और कम चीनी वाला खाना खाएं। 2 सप्ताह में दोबारा डॉक्टर से मिलें।',ta:'நோயாளிக்கு வகை 2 நீரிழிவு நோய் இருப்பது கண்டறியப்பட்டுள்ளது. இரத்தத்தில் சர்க்கரை அளவு அதிகமாக உள்ளது. மெட்ஃபார்மின் மருந்து தொடங்க மருத்துவர் பரிந்துரைத்துள்ளார். தினமும் 30 நிமிட நடை மற்றும் குறைந்த சர்க்கரை உணவு அவசியம். 2 வாரங்களில் மருத்துவரை மீண்டும் சந்தியுங்கள்.'},actions:[{id:'a1',text:'Initiate or optimise Metformin therapy as per current glycaemic targets',category:'medication',severity:'high',confidence:0.696,clinician_review_required:true,evidence:[{title:'Evidence-Based Management of Type 2 Diabetes Mellitus in Primary Care Settings',pmcid:'PMC8901234',doi:'10.1000/diabetes.2023.001',snippet:'T2DM requires a patient-centered approach with individualized glycemic targets and structured pharmacotherapy review.',cosine_similarity:0.711},{title:'Lifestyle Interventions for Prevention and Management of NCDs',pmcid:'PMC8901237',doi:'10.1000/lifestyle.2023.004',snippet:'Evidence demonstrates significant benefit from structured diet, exercise, and behavioral change programs for diabetes management.',cosine_similarity:0.641}]},{id:'a2',text:'Order HbA1c test to assess 3-month glycaemic control',category:'diagnostic',severity:'high',confidence:0.680,clinician_review_required:false,evidence:[{title:'Evidence-Based Management of Type 2 Diabetes Mellitus in Primary Care Settings',pmcid:'PMC8901234',doi:'10.1000/diabetes.2023.001',snippet:'Periodic HbA1c monitoring is essential for assessing glycemic control and guiding treatment decisions.',cosine_similarity:0.699}]},{id:'a3',text:'Refer to ophthalmology for diabetic retinopathy screening',category:'followup',severity:'medium',confidence:0.692,clinician_review_required:false,evidence:[{title:'Evidence-Based Management of Type 2 Diabetes Mellitus in Primary Care Settings',pmcid:'PMC8901234',doi:'10.1000/diabetes.2023.001',snippet:'Annual ophthalmologic screening is recommended for all patients with Type 2 diabetes.',cosine_similarity:0.629}]},{id:'a4',text:'Dietary counselling — low glycaemic index diet, reduce refined carbohydrates',category:'lifestyle',severity:'medium',confidence:0.693,clinician_review_required:false,evidence:[{title:'Lifestyle Interventions for Prevention and Management of NCDs',pmcid:'PMC8901237',doi:'10.1000/lifestyle.2023.004',snippet:'Dietary modification with low glycaemic index foods significantly improves glycaemic control.',cosine_similarity:0.706}]}],sources:[{title:'Evidence-Based Management of Type 2 Diabetes Mellitus in Primary Care Settings',pmcid:'PMC8901234',doi:'10.1000/diabetes.2023.001',snippet:'T2DM management requires patient-centered approach with individualized glycemic targets.',cosine_similarity:0.711},{title:'Lifestyle Interventions for Prevention and Management of NCDs',pmcid:'PMC8901237',doi:'10.1000/lifestyle.2023.004',snippet:'Structured diet and exercise programs demonstrate significant benefit in NCD management.',cosine_similarity:0.641},{title:'Patient Education and Health Literacy in Chronic Disease Self-Management',pmcid:'PMC8901239',doi:'10.1000/education.2023.006',snippet:'Health literacy is a key determinant of chronic disease outcomes and medication adherence.',cosine_similarity:0.607}],confidence:0.6904,hallucination_alert:false,processing_time_ms:120},
+  hypertension:{request_id:'494bb50b-demo',summary:'Patient presents with Hypertension with suboptimal blood pressure control requiring antihypertensive therapy review. Sustained elevated readings indicate need for optimisation towards target BP below 130/80 mmHg to reduce cardiovascular and renal risk. Lifestyle modifications including sodium restriction and regular aerobic exercise are essential adjuncts. Renal function monitoring and ambulatory BP assessment should be arranged within 2 weeks.',patient_summary:{hi:'रोगी का रक्तचाप (ब्लड प्रेशर) बहुत अधिक है जिसे नियंत्रित करना जरूरी है। लक्ष्य है कि ब्लड प्रेशर 130/80 से कम रहे। दवाइयां समय पर लें और नमक का सेवन कम करें। रोज सुबह ब्लड प्रेशर मापें और रिकॉर्ड रखें। 2 सप्ताह में जांच के लिए आएं।',ta:'நோயாளியின் இரத்த அழுத்தம் அதிகமாக உள்ளது. இரத்த அழுத்தம் 130/80க்கு கீழ் இருக்க வேண்டும். மருந்துகளை தவறாமல் எடுத்துக்கொள்ளுங்கள், உப்பை குறையுங்கள். 2 வாரங்களில் பரிசோதனைக்கு வாருங்கள்.'},actions:[{id:'h1',text:'Review and optimise antihypertensive regimen; target BP below 130/80 mmHg',category:'treatment',severity:'high',confidence:0.698,clinician_review_required:true,evidence:[{title:'Hypertension Control Strategies: A Systematic Review',pmcid:'PMC8901235',doi:'10.1000/hypertension.2023.002',snippet:'Effective blood pressure control requires both pharmacological and non-pharmacological strategies targeting BP below 130/80.',cosine_similarity:0.723}]},{id:'h2',text:'Arrange 24-hour ambulatory blood pressure monitoring',category:'diagnostic',severity:'high',confidence:0.693,clinician_review_required:false,evidence:[{title:'Hypertension Control Strategies: A Systematic Review',pmcid:'PMC8901235',doi:'10.1000/hypertension.2023.002',snippet:'Ambulatory BP monitoring provides superior cardiovascular risk stratification vs. office measurements.',cosine_similarity:0.698}]},{id:'h3',text:'Assess renal function and electrolytes — U&E, eGFR within 2 weeks',category:'diagnostic',severity:'medium',confidence:0.689,clinician_review_required:false,evidence:[{title:'Hypertension Control Strategies: A Systematic Review',pmcid:'PMC8901235',doi:'10.1000/hypertension.2023.002',snippet:'Renal function monitoring is essential in hypertensive patients to detect early nephropathy.',cosine_similarity:0.611}]},{id:'h4',text:'Structured lifestyle intervention: sodium restriction below 2g/day, DASH diet',category:'lifestyle',severity:'medium',confidence:0.691,clinician_review_required:false,evidence:[{title:'Lifestyle Interventions for Prevention and Management of NCDs',pmcid:'PMC8901237',doi:'10.1000/lifestyle.2023.004',snippet:'Sodium restriction and DASH diet demonstrate significant BP reduction as non-pharmacological interventions.',cosine_similarity:0.631}]}],sources:[{title:'Hypertension Control Strategies: A Systematic Review',pmcid:'PMC8901235',doi:'10.1000/hypertension.2023.002',snippet:'Hypertension affects 1.3 billion people worldwide. Effective control requires pharmacological and lifestyle strategies.',cosine_similarity:0.723},{title:'Lifestyle Interventions for Prevention and Management of NCDs',pmcid:'PMC8901237',doi:'10.1000/lifestyle.2023.004',snippet:'Structured lifestyle programs demonstrate significant benefit across cardiovascular risk factors.',cosine_similarity:0.631},{title:'Medication Adherence in Chronic Disease Management',pmcid:'PMC8901238',doi:'10.1000/adherence.2023.005',snippet:'Medication adherence in hypertension is critical — structured interventions improve long-term BP control.',cosine_similarity:0.602}],confidence:0.6926,hallucination_alert:false,processing_time_ms:95},
+  respiratory:{request_id:'236b724c-demo',summary:'Patient presents with Chronic Respiratory Disease with symptoms indicating suboptimal disease control. Objective spirometry assessment is required to guide pharmacotherapy decisions. Inhaler technique review and step-up of bronchodilator therapy should be considered per GINA/GOLD guidelines. Trigger avoidance, smoking cessation support, and written action plan provision are priorities.',patient_summary:{hi:'रोगी को सांस लेने में तकलीफ हो रही है और फेफड़ों की जांच जरूरी है। इनहेलर का सही तरीके से उपयोग करें। धूम्रपान तुरंत बंद करें — यह सबसे जरूरी कदम है। यदि सांस बहुत कठिन हो जाए तो तुरंत अस्पताल जाएं।',ta:'நோயாளிக்கு மூச்சு திணறல் இருக்கிறது, நுரையீரல் பரிசோதனை அவசியம். மருத்துவர் கூறியபடி இன்ஹேலரை சரியாக பயன்படுத்துங்கள். புகைப்பிடிப்பை உடனடியாக நிறுத்துவது மிக முக்கியம்.'},actions:[{id:'r1',text:'Optimise bronchodilator therapy per GINA/GOLD step guidelines',category:'medication',severity:'high',confidence:0.684,clinician_review_required:true,evidence:[{title:'Respiratory Disease Management: COPD, Asthma, and Pneumonia Clinical Guidelines',pmcid:'PMC8901236',doi:'10.1000/respiratory.2023.003',snippet:'GOLD guidelines recommend stepwise bronchodilator therapy based on spirometric severity and symptom burden.',cosine_similarity:0.719}]},{id:'r2',text:'Perform spirometry with reversibility testing for objective lung function assessment',category:'diagnostic',severity:'high',confidence:0.680,clinician_review_required:false,evidence:[{title:'Respiratory Disease Management: COPD, Asthma, and Pneumonia Clinical Guidelines',pmcid:'PMC8901236',doi:'10.1000/respiratory.2023.003',snippet:'Spirometry with post-bronchodilator reversibility testing is the gold standard for COPD diagnosis.',cosine_similarity:0.701}]},{id:'r3',text:'Arrange urgent review if SpO2 falls below 92% or symptoms worsen',category:'followup',severity:'high',confidence:0.692,clinician_review_required:false,evidence:[{title:'Respiratory Disease Management: COPD, Asthma, and Pneumonia Clinical Guidelines',pmcid:'PMC8901236',doi:'10.1000/respiratory.2023.003',snippet:'SpO2 monitoring with defined escalation thresholds reduces COPD exacerbation-related hospitalisation.',cosine_similarity:0.633}]},{id:'r4',text:'Reinforce smoking cessation and avoidance of known respiratory triggers',category:'lifestyle',severity:'medium',confidence:0.686,clinician_review_required:false,evidence:[{title:'Lifestyle Interventions for Prevention and Management of NCDs',pmcid:'PMC8901237',doi:'10.1000/lifestyle.2023.004',snippet:'Smoking cessation is the single most effective intervention for slowing COPD progression.',cosine_similarity:0.624}]}],sources:[{title:'Respiratory Disease Management: COPD, Asthma, and Pneumonia Clinical Guidelines',pmcid:'PMC8901236',doi:'10.1000/respiratory.2023.003',snippet:'Evidence-based COPD management reduces hospitalisation through structured pharmacotherapy and lifestyle intervention.',cosine_similarity:0.719},{title:'Lifestyle Interventions for Prevention and Management of NCDs',pmcid:'PMC8901237',doi:'10.1000/lifestyle.2023.004',snippet:'Smoking cessation and structured exercise programs improve respiratory outcomes significantly.',cosine_similarity:0.624},{title:'Patient Education and Health Literacy in Chronic Disease Self-Management',pmcid:'PMC8901239',doi:'10.1000/education.2023.006',snippet:'Written action plans and patient education reduce COPD exacerbation frequency and emergency visits.',cosine_similarity:0.588}],confidence:0.6856,hallucination_alert:false,processing_time_ms:88}
+};
+
+// ── HELP MODAL ────────────────────────────────────────────────────────────
+function openHelp(){document.getElementById('helpModal').classList.add('open')}
+function closeHelp(){document.getElementById('helpModal').classList.remove('open')}
+function closeHelpOutside(e){if(e.target===document.getElementById('helpModal'))closeHelp()}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp()});
+
+// ── MODE & TABS ───────────────────────────────────────────────────────────
+function setMode(mode){
+  currentMode=mode;
+  document.getElementById('modeDemo').classList.toggle('active',mode==='demo');
+  document.getElementById('modeLive').classList.toggle('active',mode==='live');
+  const btn=document.getElementById('analyseBtn');
+  btn.classList.toggle('live-mode',mode==='live');
+  btn.textContent=mode==='live'?'🔴 Analyse with AWS Bedrock':'▶ Analyse Note';
+  document.getElementById('modeHint').textContent=mode==='live'
+    ?'🔴 Live mode — calls real AWS Bedrock (~5s)'
+    :'⚡ Demo mode — instant pre-computed results';
+  document.getElementById('liveIndicator').innerHTML=mode==='live'
+    ?'<span class="live-dot"></span>Live AWS'
+    :'<span class="live-dot"></span>Ready';
+}
+
+function setInputTab(tab){
+  currentInputTab=tab;
+  ['Preset','Custom','Pdf'].forEach(t=>{
+    document.getElementById('tab'+t).classList.toggle('active',t.toLowerCase()===tab);
+    document.getElementById('section'+t).classList.toggle('visible',t.toLowerCase()===tab);
+  });
+}
+
+function selectCase(c){
+  selectedCase=c;
+  ['diabetes','hypertension','respiratory'].forEach(k=>{
+    document.getElementById('card-'+k).classList.toggle('active-case',k===c);
+  });
+}
+
+// ── PDF HANDLING ──────────────────────────────────────────────────────────
+function handleDragOver(e){e.preventDefault();document.getElementById('pdfDrop').classList.add('dragover')}
+function handleDrop(e){e.preventDefault();document.getElementById('pdfDrop').classList.remove('dragover');const f=e.dataTransfer.files[0];if(f)processFile(f)}
+function handleFileSelect(e){const f=e.target.files[0];if(f)processFile(f)}
+
+async function processFile(file){
+  const status=document.getElementById('pdfStatus');
+  const preview=document.getElementById('pdfPreviewBox');
+  status.className='pdf-status'; status.textContent='';
+
+  if(file.type==='text/plain'){
+    const text=await file.text();
+    extractedText=text.trim();
+    status.textContent=`✅ Loaded — ${extractedText.length} characters extracted`;
+    status.className='pdf-status success';
+    preview.textContent=extractedText.substring(0,280)+(extractedText.length>280?'...':'');
+    preview.classList.add('visible');
+    return;
+  }
+
+  if(file.type!=='application/pdf'){
+    status.textContent='❌ Please upload a PDF or TXT file';
+    status.className='pdf-status error';
+    return;
+  }
+
+  if(!window.pdfjsLib){
+    status.textContent='⚠️ PDF.js not loaded — paste text in Custom Note tab instead';
+    status.className='pdf-status error';
+    return;
+  }
+
+  status.textContent='⏳ Extracting text...';
+  status.className='pdf-status success';
+  try{
+    const ab=await file.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+    let txt='';
+    for(let i=1;i<=pdf.numPages;i++){
+      const p=await pdf.getPage(i);
+      const c=await p.getTextContent();
+      txt+=c.items.map(x=>x.str).join(' ')+'\n';
+    }
+    extractedText=txt.trim();
+    status.textContent=`✅ Extracted ${pdf.numPages} page(s) — ${extractedText.length} characters`;
+    status.className='pdf-status success';
+    preview.textContent=extractedText.substring(0,280)+(extractedText.length>280?'...':'');
+    preview.classList.add('visible');
+  }catch(err){
+    status.textContent='❌ Could not read PDF — try the Custom Note tab instead';
+    status.className='pdf-status error';
+  }
+}
+
+// ── ANALYSE ───────────────────────────────────────────────────────────────
+function getNoteText(){
+  if(currentInputTab==='preset') return selectedCase?NOTE_TEXTS[selectedCase]:'';
+  if(currentInputTab==='custom') return document.getElementById('customNote').value.trim();
+  if(currentInputTab==='pdf') return extractedText;
+  return '';
+}
+function getLang(){
+  if(currentInputTab==='custom') return document.getElementById('langSelect').value;
+  if(currentInputTab==='pdf') return document.getElementById('langSelectPdf').value;
+  return 'hi';
+}
+
+async function analyse(){
+  const note=getNoteText();
+  if(!note){
+    if(currentInputTab==='preset') {alert('Please select a case first.');return;}
+    if(currentInputTab==='pdf') {alert('Please upload a PDF or TXT file first.');return;}
+    alert('Please enter a clinical note.');
+    return;
+  }
+
+  if(currentMode==='demo'&&currentInputTab==='preset'){
+    showLoading(false);
+    setTimeout(()=>{
+      const r=JSON.parse(JSON.stringify(DEMO[selectedCase]));
+      r.processing_time_ms=Math.floor(Math.random()*150)+40;
+      renderResults(r,false);
+    },900);
+    return;
+  }
+
+  showLoading(true);
+  try{
+    const resp=await fetch(API_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({clinical_note:note,language_preference:getLang()})
+    });
+    const data=await resp.json();
+    if(data.error) throw new Error(data.error.message||'API error');
+    renderResults(data,true);
+  }catch(err){
+    document.getElementById('rightPanel').innerHTML=`
+      <div class="error-card">
+        <h3>⚠️ API Error</h3>
+        <p>${err.message}</p>
+        <p style="margin-top:8px;font-size:11px;font-family:var(--mono)">Switch to Demo mode for instant results, or check your network.</p>
+      </div>`;
+  }
+}
+
+function showLoading(isLive){
+  const steps=isLive
+    ?['→ PHI detection running...','→ Titan Embeddings: vectorising note...','→ FAISS: retrieving PMC corpus...','→ Bedrock Nova Pro: generating summary...','→ Translating to regional language...','→ Confidence scoring & audit logging...']
+    :['→ Loading pre-computed demo results...'];
+  document.getElementById('rightPanel').innerHTML=`
+    <div class="loading-panel">
+      <div class="loading-ring"></div>
+      <div class="loading-text">${isLive?'Calling AWS Bedrock...':'Analysing...'}</div>
+      <div class="loading-sub">${isLive?'Lambda → Nova Pro → FAISS RAG → DynamoDB':''}</div>
+      <div class="loading-steps">${steps.map((s,i)=>`<div class="loading-step" style="animation-delay:${i*0.4}s">${s}</div>`).join('')}</div>
+    </div>`;
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────
+const CAT_ICONS={medication:'💊',diagnostic:'🔬',lifestyle:'🏃',followup:'📅',treatment:'⚕️',education:'📖'};
+
+function renderResults(d,isLive){
+  const cp=(d.confidence*100).toFixed(1);
+  const cc=d.confidence>=0.75?'conf-high':d.confidence>=0.6?'conf-med':'conf-low';
+  const fc=d.confidence>=0.75?'fill-high':d.confidence>=0.6?'fill-med':'fill-low';
+  const rc=d.actions?d.actions.filter(a=>a.clinician_review_required).length:0;
+  const hi=d.patient_summary?.hi||''; const ta=d.patient_summary?.ta||'';
+
+  // Actions
+  let aHtml='';
+  (d.actions||[]).forEach((a,i)=>{
+    const icon=CAT_ICONS[a.category]||'📋';
+    const conf=(a.confidence*100).toFixed(1);
+    const cc2=a.confidence>=0.7?'conf-high':a.confidence>=0.6?'conf-med':'conf-low';
+    const evHtml=(a.evidence||[]).map(e=>{
+      const sim=(e.cosine_similarity*100).toFixed(1);
+      return `<div class="evidence-item">
+        <div class="ev-title">${e.title}</div>
+        <div class="ev-meta">${e.pmcid} • similarity: ${sim}%</div>
+        <div class="ev-snippet">${e.snippet}</div>
+        <div class="sim-bar"><div class="sim-fill" style="width:${Math.min(sim,100)}%"></div></div>
+      </div>`;
+    }).join('');
+    aHtml+=`<div class="action-item" onclick="toggleEv('ev${i}')">
+      <div class="action-main">
+        <span class="sev-badge sev-${a.severity}">${a.severity}</span>
+        <span style="font-size:17px;margin-top:1px">${icon}</span>
+        <div class="action-body">
+          <div class="action-text">${a.text}</div>
+          <div class="action-tags"><span class="action-tag">${a.category}</span><span class="action-tag">tap for evidence ↓</span></div>
+        </div>
+        <div class="action-right">
+          <div class="conf-num ${cc2}">${conf}%</div>
+          <div class="review-flag ${a.clinician_review_required?'review-yes':'review-no'}">${a.clinician_review_required?'👨‍⚕️ Review':'✅ OK'}</div>
+        </div>
+      </div>
+      <div class="evidence-panel" id="ev${i}">${evHtml}</div>
+    </div>`;
+  });
+
+  // Sources
+  const sHtml=(d.sources||[]).map(s=>{
+    const sim=(s.cosine_similarity*100).toFixed(1);
+    return `<div class="source-card">
+      <div class="source-pmc">${s.pmcid}</div>
+      <div class="source-title">${s.title}</div>
+      <div class="source-snippet">${s.snippet}</div>
+      <div class="sim-bar" style="margin-top:7px"><div class="sim-fill" style="width:${Math.min(sim,100)}%"></div></div>
+      <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:3px">similarity: ${sim}%</div>
+    </div>`;
+  }).join('');
+
+  // Translations
+  const transHtml=(hi||ta)?`
+    <div class="trans-tabs">
+      <button class="trans-tab active" onclick="switchTrans(0)">हिन्दी</button>
+      <button class="trans-tab" onclick="switchTrans(1)">தமிழ்</button>
+    </div>
+    <div class="trans-content active" id="tr0">${hi||'<span style="color:var(--text3)">Not available</span>'}</div>
+    <div class="trans-content" id="tr1">${ta||'<span style="color:var(--text3)">Not available</span>'}</div>`:'';
+
+  document.getElementById('rightPanel').innerHTML=`
+  <div class="results-container animate-in">
+    <div class="powered-by">
+      <span>⚡</span>
+      <span class="aws-chip">Amazon Bedrock</span><span>Nova Pro</span>
+      <span class="pipe-sep">|</span>
+      <span class="aws-chip">Titan Embeddings</span><span>+ FAISS RAG</span>
+      <span class="pipe-sep">|</span>
+      <span class="aws-chip">Lambda</span><span>+ API Gateway</span>
+      <span class="pipe-sep">|</span>
+      <span>${isLive?'🔴 Live AWS':'⚡ Demo'}</span>
+      <span style="margin-left:auto">${d.processing_time_ms}ms</span>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-label">Confidence Score</div>
+        <div class="metric-value ${cc}">${cp}%</div>
+        <div class="progress-bar"><div class="progress-fill ${fc}" style="width:${cp}%"></div></div>
+        <div class="metric-sub">RAG-grounded</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Actions Generated</div>
+        <div class="metric-value" style="color:var(--accent)">${d.actions?.length||0}</div>
+        <div class="metric-sub">${rc} require clinician review</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Hallucination Guard</div>
+        <div class="metric-value" style="font-size:18px;margin-top:6px">${!d.hallucination_alert?'<span class="conf-high">✅ Grounded</span>':'<span class="conf-low">⚠️ Alert</span>'}</div>
+        <div class="metric-sub">${d.sources?.length||0} PMC citations</div>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <div class="card-header">
+        <div class="card-title"><div class="cticon ci-blue">📋</div>Clinical Summary</div>
+        <div class="time-tag">⚡ ${d.processing_time_ms}ms</div>
+      </div>
+      <div class="summary-text">${d.summary}</div>
+      ${transHtml}
+    </div>
+
+    <div class="result-card">
+      <div class="card-header">
+        <div class="card-title"><div class="cticon ci-amber">⚡</div>Recommended Actions (${d.actions?.length||0})</div>
+        <div class="time-tag">${rc} need review</div>
+      </div>
+      ${aHtml}
+    </div>
+
+    <div class="result-card">
+      <div class="card-header">
+        <div class="card-title"><div class="cticon ci-purple">📚</div>PMC Evidence Sources</div>
+        <div class="time-tag">${d.sources?.length||0} citations</div>
+      </div>
+      <div class="source-grid">${sHtml}</div>
+    </div>
+
+    <div style="font-size:10px;color:var(--text3);font-family:var(--mono);text-align:center;padding:6px 0 20px;line-height:1.8">
+      request_id: ${d.request_id} | hallucination_alert: ${d.hallucination_alert} | confidence: ${d.confidence?.toFixed(4)}<br>
+      ⚠️ Prototype — not validated for clinical use — all outputs require qualified clinician review
+    </div>
+  </div>`;
+}
+
+function toggleEv(id){document.getElementById(id).classList.toggle('open')}
+function switchTrans(idx){
+  document.querySelectorAll('.trans-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  document.querySelectorAll('.trans-content').forEach((t,i)=>t.classList.toggle('active',i===idx));
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Aarogya Sahayak — Minimal Hackathon Serverless Stack
+  Estimated cost: ~$6/month at prototype scale (well within $240 credits)
+
+Parameters:
+  Environment:
+    Type: String
+    Default: hackathon
+    AllowedValues: [hackathon, dev, staging, prod]
+
+Resources:
+
+  CorpusBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'aarogya-corpus-${Environment}-${AWS::AccountId}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  AuditTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'aarogya-audit-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: request_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: request_id
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      Tags:
+        - Key: Project
+          Value: AarogyaSahayak
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'aarogya-lambda-role-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: AppPermissions
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: [bedrock:InvokeModel]
+                Resource: '*'
+              - Effect: Allow
+                Action: [s3:GetObject, s3:ListBucket]
+                Resource:
+                  - !GetAtt CorpusBucket.Arn
+                  - !Sub '${CorpusBucket.Arn}/*'
+              - Effect: Allow
+                Action: [dynamodb:PutItem, dynamodb:GetItem, dynamodb:Query]
+                Resource: !GetAtt AuditTable.Arn
+
+  SummarizeLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'aarogya-summarize-${Environment}'
+      Runtime: python3.11
+      Handler: src/backend/handlers/summarize.lambda_handler
+      Role: !GetAtt LambdaRole.Arn
+      Code:
+        S3Bucket: !Sub 'aarogya-deploy-${AWS::AccountId}'
+        S3Key: function.zip
+      Timeout: 60
+      MemorySize: 1024
+      Environment:
+        Variables:
+          AWS_MODE: production
+          FAISS_INDEX_PATH: /tmp/faiss_index
+          CORPUS_BUCKET: !Ref CorpusBucket
+          AUDIT_TABLE: !Ref AuditTable
+          BEDROCK_MODEL_ID: anthropic.claude-3-haiku-20240307-v1:0
+      Tags:
+        - Key: Project
+          Value: AarogyaSahayak
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${SummarizeLambda}'
+      RetentionInDays: 7
+
+  HttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub 'aarogya-api-${Environment}'
+      ProtocolType: HTTP
+      CorsConfiguration:
+        AllowOrigins: ['*']
+        AllowMethods: [POST, OPTIONS]
+        AllowHeaders: [Content-Type, Authorization]
+
+  LambdaIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt SummarizeLambda.Arn
+      PayloadFormatVersion: '2.0'
+
+  PostRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: POST /summaries
+      Target: !Sub 'integrations/${LambdaIntegration}'
+
+  ApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref HttpApi
+      StageName: $default
+      AutoDeploy: true
+
+  InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SummarizeLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*'
+
+  ErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub 'aarogya-errors-${Environment}'
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref SummarizeLambda
+
+Outputs:
+  ApiEndpoint:
+    Description: POST to this URL — e.g. curl -X POST $ApiEndpoint/summaries
+    Value: !GetAtt HttpApi.ApiEndpoint
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiEndpoint'
+  AuditTableName:
+    Value: !Ref AuditTable
+  CorpusBucketName:
+    Value: !Ref CorpusBucket

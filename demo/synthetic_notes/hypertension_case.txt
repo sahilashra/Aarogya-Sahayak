@@ -1,0 +1,69 @@
+SYNTHETIC CLINICAL NOTE - HYPERTENSION CASE
+============================================
+Date: [REDACTED]
+Patient ID: [REDACTED]
+Age: 58 years
+Gender: Male
+
+CHIEF COMPLAINT:
+Patient presents for routine follow-up of hypertension and reports occasional headaches and dizziness.
+
+HISTORY OF PRESENT ILLNESS:
+Patient was diagnosed with essential hypertension 8 years ago. He reports good medication compliance but has been experiencing frontal headaches 2-3 times per week, especially in the morning. He also notes occasional dizziness when standing up quickly. No chest pain, palpitations, or shortness of breath. Patient admits to high salt intake and sedentary lifestyle due to desk job.
+
+PAST MEDICAL HISTORY:
+- Essential hypertension for 8 years
+- Obesity (BMI 31.2)
+- No history of diabetes, stroke, or myocardial infarction
+
+FAMILY HISTORY:
+Father died of stroke at age 65. Mother has hypertension and diabetes.
+
+SOCIAL HISTORY:
+Non-smoker, occasional alcohol consumption (2-3 drinks per week), works as office administrator with minimal physical activity.
+
+MEDICATIONS:
+- Enalapril 10mg once daily
+- Hydrochlorothiazide 12.5mg once daily
+
+PHYSICAL EXAMINATION:
+Vitals: BP 156/96 mmHg (right arm, sitting), Pulse 76/min regular, Temperature 98.2°F, Weight 88 kg, Height 172 cm, BMI 31.2
+General: Overweight male, alert and cooperative
+HEENT: No papilledema on fundoscopy, no retinal hemorrhages
+Neck: No carotid bruits, no jugular venous distension
+Cardiovascular: Regular rate and rhythm, S1 S2 normal, no murmurs or gallops, PMI not displaced
+Respiratory: Clear to auscultation bilaterally
+Abdomen: Obese, soft, non-tender, no masses
+Extremities: No edema, peripheral pulses 2+ bilaterally
+Neurological: Cranial nerves intact, no focal deficits
+
+LABORATORY FINDINGS:
+Fasting Blood Glucose: 102 mg/dL (borderline)
+HbA1c: 5.9% (prediabetic range)
+Lipid Profile: Total cholesterol 198 mg/dL, LDL 128 mg/dL, HDL 38 mg/dL, Triglycerides 160 mg/dL
+Kidney Function: Creatinine 1.1 mg/dL, eGFR 78 mL/min/1.73m²
+Electrolytes: Sodium 140 mEq/L, Potassium 4.2 mEq/L
+Urinalysis: No protein, no blood
+ECG: Normal sinus rhythm, no left ventricular hypertrophy
+
+ASSESSMENT:
+1. Uncontrolled essential hypertension despite dual therapy
+2. Obesity (BMI 31.2)
+3. Prediabetes
+4. Dyslipidemia with low HDL
+5. Increased cardiovascular risk
+
+PLAN:
+1. Increase Enalapril to 20mg once daily for better blood pressure control
+2. Continue Hydrochlorothiazide 12.5mg once daily
+3. Add Amlodipine 5mg once daily if blood pressure remains elevated after 2 weeks
+4. Dietary counseling - DASH diet, reduce sodium intake to <2g per day
+5. Weight reduction goal - lose 5-7% body weight over 6 months
+6. Exercise prescription - 150 minutes of moderate aerobic activity per week
+7. Home blood pressure monitoring - twice daily for 1 week, then weekly
+8. Repeat lipid profile and kidney function in 3 months
+9. Screen for obstructive sleep apnea given obesity and hypertension
+10. Follow-up in 2 weeks to assess blood pressure response and medication tolerance
+
+PATIENT EDUCATION PROVIDED:
+Discussed importance of blood pressure control to prevent stroke, heart attack, and kidney disease. Reviewed dietary modifications including reducing salt, increasing fruits and vegetables, and portion control. Emphasized need for regular physical activity and weight loss. Patient expressed motivation to make lifestyle changes and agreed to home blood pressure monitoring.

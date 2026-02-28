@@ -1,0 +1,58 @@
+SYNTHETIC CLINICAL NOTE - DIABETES CASE
+========================================
+Date: [REDACTED]
+Patient ID: [REDACTED]
+Age: 52 years
+Gender: Female
+
+CHIEF COMPLAINT:
+Patient presents with increased thirst, frequent urination, and unexplained weight loss over the past 3 months.
+
+HISTORY OF PRESENT ILLNESS:
+Patient reports drinking 4-5 liters of water daily and waking up 3-4 times at night to urinate. She has lost approximately 8 kg in the last 3 months despite maintaining normal appetite. Patient also complains of fatigue and blurred vision intermittently. No history of fever, chest pain, or shortness of breath.
+
+PAST MEDICAL HISTORY:
+- Hypertension diagnosed 5 years ago, controlled with medication
+- No previous diagnosis of diabetes
+- No history of cardiovascular disease
+
+FAMILY HISTORY:
+Mother had type 2 diabetes. Father had hypertension.
+
+MEDICATIONS:
+- Amlodipine 5mg once daily for hypertension
+
+PHYSICAL EXAMINATION:
+Vitals: BP 138/88 mmHg, Pulse 82/min, Temperature 98.4°F, Weight 68 kg, Height 162 cm, BMI 25.9
+General: Alert and oriented, appears fatigued
+HEENT: Pupils equal and reactive, no retinopathy noted on fundoscopy
+Cardiovascular: Regular rate and rhythm, no murmurs
+Respiratory: Clear breath sounds bilaterally
+Abdomen: Soft, non-tender, no organomegaly
+Extremities: No edema, peripheral pulses palpable, no foot ulcers
+
+LABORATORY FINDINGS:
+Fasting Blood Glucose: 186 mg/dL (normal <100 mg/dL)
+HbA1c: 8.2% (normal <5.7%)
+Random Blood Glucose: 245 mg/dL
+Urine: Glucose present, no ketones
+Lipid Profile: Total cholesterol 220 mg/dL, LDL 145 mg/dL, HDL 42 mg/dL, Triglycerides 165 mg/dL
+Kidney Function: Creatinine 0.9 mg/dL, eGFR >90 mL/min/1.73m²
+
+ASSESSMENT:
+Newly diagnosed Type 2 Diabetes Mellitus with poor glycemic control. Patient also has dyslipidemia and hypertension, increasing cardiovascular risk.
+
+PLAN:
+1. Initiate Metformin 500mg twice daily with meals, titrate up as tolerated
+2. Dietary counseling - low glycemic index diet, reduce refined carbohydrates
+3. Lifestyle modification - recommend 30 minutes of moderate exercise 5 days per week
+4. Monitor blood glucose at home - fasting and 2 hours post-meal
+5. Repeat HbA1c in 3 months to assess glycemic control
+6. Ophthalmology referral for diabetic retinopathy screening
+7. Continue Amlodipine for hypertension
+8. Consider statin therapy for dyslipidemia management
+9. Patient education on diabetes self-management, foot care, and hypoglycemia recognition
+10. Follow-up in 2 weeks to assess medication tolerance and glucose control
+
+PATIENT EDUCATION PROVIDED:
+Discussed diabetes diagnosis, importance of medication adherence, dietary modifications, regular exercise, and monitoring for complications. Patient verbalized understanding and agreed to treatment plan.
