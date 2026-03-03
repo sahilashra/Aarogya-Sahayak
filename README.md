@@ -21,7 +21,7 @@ India has **1 doctor per 1,456 patients** (WHO recommends 1:1,000). Overworked c
 
 | Resource | URL |
 |----------|-----|
-| **Frontend (S3)** | http://aarogya-frontend-761341390248.s3-website-us-east-1.amazonaws.com |
+| **Frontend (S3)** | [AarogyaSahayak](https://dch879khvx4pi.cloudfront.net) |
 | **API Endpoint** | `POST https://1iewiqgxm1.execute-api.us-east-1.amazonaws.com/summaries` |
 
 **Try it:**
