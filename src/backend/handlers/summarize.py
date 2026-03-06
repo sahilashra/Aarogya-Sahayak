@@ -190,12 +190,12 @@ def _parse_request_body(event: Dict[str, Any]) -> Dict[str, Any]:
     
     # Validate language_preference if provided
     language_preference = request_data.get("language_preference", "ta")
-    if language_preference not in ["ta", "hi"]:
+    if language_preference not in ["ta", "hi", "en"]:
         return _create_error_response(
             status_code=400,
             error_code="BAD_REQUEST",
-            message="Field 'language_preference' must be 'ta' or 'hi'.",
-            details={"provided": language_preference, "allowed": ["ta", "hi"]}
+            message="Field 'language_preference' must be 'ta', 'hi', or 'en'.",
+            details={"provided": language_preference, "allowed": ["ta", "hi", "en"]}
         )
     
     # Validate request_id if provided

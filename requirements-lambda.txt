@@ -1,0 +1,8 @@
+# Lambda runtime dependencies ONLY
+# boto3 excluded — already available in Lambda runtime
+# Dev tools excluded — pytest, black, flake8, mypy, bandit not needed in Lambda
+pydantic>=2.5.0
+python-dotenv>=1.0.0
+PyJWT>=2.8.0
+numpy>=1.26.0
+faiss-cpu>=1.7.4

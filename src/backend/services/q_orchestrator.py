@@ -130,7 +130,7 @@ class QOrchestrator:
             hallucination_alert = self._detect_hallucinations(actions_with_confidence)
             
             # Step 6: Generate Hindi and Tamil translations
-            patient_summary = self._generate_translations(summary_data["summary"])
+            patient_summary = self._generate_translations(summary_data["summary"], language_preference)
             
             # Calculate overall confidence (average of action confidences)
             overall_confidence = self._calculate_overall_confidence(actions_with_confidence)
@@ -331,16 +331,28 @@ class QOrchestrator:
         """
         return detect_hallucination(actions)
     
-    def _generate_translations(self, summary: str) -> Dict[str, str]:
+    def _generate_translations(self, summary: str, language_preference: str = "hi") -> Dict[str, str]:
         """
-        Generate Hindi and Tamil translations of patient summary.
+        Generate patient summary translations based on language preference.
+        
+        For English, returns the summary as-is (no Bedrock call needed).
+        For Hindi or Tamil, generates both translations via Bedrock.
         
         Args:
             summary: English clinical summary
+            language_preference: Target language ("hi", "ta", or "en")
             
         Returns:
-            Dict with "hi" and "ta" keys containing translations
+            Dict with "hi", "ta", and/or "en" keys containing translations
         """
+        # English: return the summary directly, no translation needed
+        if language_preference == "en":
+            return {
+                "en": summary,
+                "hi": "",
+                "ta": ""
+            }
+        
         # Generate Hindi translation
         hindi_translation = self.bedrock_client.generate_translation(summary, "hi")
         
@@ -349,7 +361,8 @@ class QOrchestrator:
         
         return {
             "hi": hindi_translation,
-            "ta": tamil_translation
+            "ta": tamil_translation,
+            "en": ""
         }
     
     def _calculate_overall_confidence(self, actions: List[ActionItem]) -> float:
